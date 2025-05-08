@@ -6,6 +6,17 @@ interface PaymentRequest {
   shareholderId: string;
 }
 
+interface Payment {
+  id: string;
+  shareholder_id: string;
+  amount: number;
+  type: string;
+  status: string;
+  transaction_date: string;
+  checkout_request_id?: string;
+  confirmed_at?: string;
+}
+
 export const initiateMpesaPayment = async ({ phone, amount, shareholderId }: PaymentRequest) => {
   try {
     // Create pending payment record
@@ -18,9 +29,11 @@ export const initiateMpesaPayment = async ({ phone, amount, shareholderId }: Pay
         status: 'pending',
         transaction_date: new Date().toISOString()
       })
+      .select()
       .single();
 
     if (paymentError) throw paymentError;
+    if (!payment) throw new Error('No payment data returned');
 
     // Make API call to M-Pesa (this is a mock - i will replace with actual M-Pesa API)
     const response = await fetch('/api/mpesa/stkpush', {
